@@ -1,45 +1,37 @@
-# ------------ 1. BASE IMAGE (PHP + Apache) ------------
-FROM php:8.2-apache
+# ----------- Base image -----------
+FROM php:8.2-cli
 
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+# ----------- Set working directory -----------
+WORKDIR /var/www/html
 
-# ------------ 2. INSTALL SYSTEM DEPENDENCIES ------------
+# ----------- Install system dependencies -----------
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
     libzip-dev \
     libonig-dev \
     libxml2-dev \
-    libpq-dev \
     libpng-dev \
-    && docker-php-ext-install pdo pdo_mysql pdo_pgsql zip mbstring exif pcntl bcmath
+    && docker-php-ext-install pdo pdo_mysql zip mbstring exif pcntl bcmath
 
-# ------------ 3. INSTALL COMPOSER ------------
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-# ------------ 4. COPY LARAVEL PROJECT ------------
-WORKDIR /var/www/html
-
+# ----------- Copy project files -----------
 COPY . .
 
-# ------------ 5. INSTALL DEPENDENCIES ------------
+# ----------- Install composer -----------
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --optimize-autoloader
 
-# ------------ 6. SET PERMISSIONS ------------
+# ----------- Permissions -----------
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 storage bootstrap/cache
 
-# ------------ 7. APACHE DOCUMENT ROOT ------------
-RUN sed -i 's#/var/www/html#/var/www/html/public#g' /etc/apache2/sites-available/000-default.conf
+# ----------- Optimize Laravel -----------
+RUN php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache
 
-# ------------ 8. OPTIMIZE LARAVEL ------------
-RUN php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache
+# ----------- Expose port -----------
+EXPOSE 8080
 
-# ------------ 9. EXPOSE PORT 80 ------------
-EXPOSE 80
-
-# ------------ 10. START APACHE ------------
-CMD ["apache2-foreground"]
+# ----------- Start PHP built-in server -----------
+CMD ["php", "-S", "0.0.0.0:8080", "-t", "public"]
