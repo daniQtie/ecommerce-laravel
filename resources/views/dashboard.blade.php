@@ -13,12 +13,15 @@
         
             </h2>
         </div>
-        <a href="{{ route('cart.view') }}" class="flex items-center gap-2 bg-[#2ECCB0] text-white px-4 py-2 rounded-xl shadow hover:bg-[#27b79e] transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.3 2.7a1 1 0 001 1.3h12.1a1 1 0 001-1.3L17 13M7 13V6h10v7"/>
-            </svg>
-            Cart
-        </a>
+<div class="flex items-center space-x-4 mb-6">
+    <img src="{{ auth()->user()->profile_picture ? asset('storage/profile_pictures/' . auth()->user()->profile_picture) : asset('default-avatar.png') }}"
+         alt="Profile Picture" class="w-16 h-16 rounded-full object-cover border-2 border-[#2ECCB0]">
+    <div>
+        <h2 class="font-bold text-xl text-[#2E2E2E]">{{ auth()->user()->name }}</h2>
+        <p class="text-gray-500">{{ auth()->user()->email }}</p>
+    </div>
+</div>
+
     </div>
 
     <!-- DASHBOARD CARDS -->
